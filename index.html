@@ -1,18 +1,4 @@
-const textarea=document.getElementById('comment-'+ds);
-  if(textarea){
-    let timer;
-    textarea.addEventListener('input',()=>{
-      clearTimeout(timer);
-      const ok=document.getElementById('save-ok-'+ds);
-      if(ok)ok.textContent='';
-      timer=setTimeout(()=>{
-        if(!state.days[ds])state.days[ds]={};
-        state.days[ds].comment=textarea.value;
-        save();renderCal();
-        if(ok){ok.textContent='자동 저장됨 ✓';setTimeout(()=>{ok.textContent=''},2000);}
-      },800);
-    });
-  }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -48,7 +34,6 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 
 .event-strip{margin:12px 0 6px;display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
 .event-chip{white-space:nowrap;background:#fdf2ff;border:1px solid #e9d5ff;border-radius:20px;padding:4px 10px;font-size:12px;color:#9333ea;cursor:pointer;flex-shrink:0}
-.event-chip .ev-date{color:#c084fc;font-size:11px}
 
 .day-detail{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 16px rgba(180,100,200,.1);margin-top:8px}
 .day-detail h3{font-size:16px;font-weight:600;color:#7c3aed;margin-bottom:12px}
@@ -73,10 +58,6 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 .add-task input:focus{border-color:#9333ea}
 .add-task button{background:#9333ea;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
 
-.save-btn{width:100%;background:#9333ea;color:#fff;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:14px}
-.save-btn:hover{opacity:.9}
-.save-ok{text-align:center;font-size:13px;color:#9333ea;margin-top:8px;height:18px}
-
 .event-form{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 16px rgba(180,100,200,.1);margin-bottom:16px}
 .ev-input{width:100%;border:1.5px solid #e9d5ff;border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:8px;outline:none;font-family:inherit}
 .ev-input:focus{border-color:#9333ea}
@@ -96,7 +77,6 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 .chart-wrap{background:#fff;border-radius:14px;padding:14px;box-shadow:0 2px 12px rgba(180,100,200,.1);margin-bottom:14px}
 .chart-title{font-size:13px;font-weight:600;color:#9333ea;margin-bottom:12px}
 
-/* 주간 세로 막대 */
 .week-bars{display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:24px;position:relative}
 .week-bar-col{display:flex;flex-direction:column;align-items:center;flex:1;height:100%}
 .week-bar-track{flex:1;width:100%;display:flex;align-items:flex-end;border-radius:6px 6px 0 0;overflow:visible;position:relative}
@@ -105,14 +85,12 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 .week-bar-day{font-size:11px;color:#888;margin-top:4px}
 .week-bar-today .week-bar-day{color:#9333ea;font-weight:700}
 
-/* 월간 가로 막대 */
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .bar-label{font-size:12px;color:#888;width:36px;text-align:right;flex-shrink:0}
 .bar-track{flex:1;background:#f3e8ff;border-radius:4px;height:14px}
 .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#c084fc,#ec4899);transition:width .4s}
 .bar-score{font-size:11px;color:#9333ea;width:28px;text-align:right;flex-shrink:0}
 
-/* 월간 항목별 */
 .task-score-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3e8ff}
 .task-score-item:last-child{border-bottom:none}
 .ts-name{flex:1;font-size:13px;color:#333}
@@ -125,30 +103,22 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 <body>
 <div class="app">
   <div style="text-align:center;padding:8px 0 4px">
-    <span id="app-title" style="font-size:22px;font-weight:700;color:#9333ea" onclick="focusNameEdit()" title="설정에서 이름 변경">🌸 하루 기록</span>
+    <span id="app-title" style="font-size:22px;font-weight:700;color:#9333ea;cursor:pointer" onclick="focusNameEdit()">하루 기록</span>
   </div>
 
   <nav class="nav">
-    <button class="nav-btn active" onclick="showPage('cal')" id="nav-cal">
-      <span class="nav-emoji">🗓️</span>달력
-    </button>
-    <button class="nav-btn" onclick="showPage('events')" id="nav-events">
-      <span class="nav-emoji">⭐</span>중요한 일
-    </button>
-    <button class="nav-btn" onclick="showPage('stats')" id="nav-stats">
-      <span class="nav-emoji">📊</span>통계
-    </button>
-    <button class="nav-btn" onclick="showPage('settings')" id="nav-settings">
-      <span class="nav-emoji">⚙️</span>설정
-    </button>
+    <button class="nav-btn active" onclick="showPage('cal')" id="nav-cal"><span class="nav-emoji">🗓️</span>달력</button>
+    <button class="nav-btn" onclick="showPage('events')" id="nav-events"><span class="nav-emoji">⭐</span>중요한 일</button>
+    <button class="nav-btn" onclick="showPage('stats')" id="nav-stats"><span class="nav-emoji">📊</span>통계</button>
+    <button class="nav-btn" onclick="showPage('settings')" id="nav-settings"><span class="nav-emoji">⚙️</span>설정</button>
   </nav>
 
-  <!-- CALENDAR PAGE -->
+  <!-- CALENDAR -->
   <div id="page-cal">
     <div class="cal-header">
-      <button class="cal-nav-btn" onclick="moveMonth(-1)" title="이전 달">&#8249;</button>
+      <button class="cal-nav-btn" onclick="moveMonth(-1)">&#8249;</button>
       <h2 id="cal-title"></h2>
-      <button class="cal-nav-btn" onclick="moveMonth(1)" title="다음 달">&#8250;</button>
+      <button class="cal-nav-btn" onclick="moveMonth(1)">&#8250;</button>
     </div>
     <div class="cal-weekdays">
       <div class="cal-wd" style="color:#f87171">일</div>
@@ -161,7 +131,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
     <div id="day-detail-area"></div>
   </div>
 
-  <!-- EVENTS PAGE -->
+  <!-- EVENTS -->
   <div id="page-events" style="display:none">
     <div class="event-form">
       <div class="section-label">⭐ 중요한 일 추가</div>
@@ -171,7 +141,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
       </div>
       <input class="ev-input" id="ev-date-in" type="date">
       <div style="display:flex;gap:6px;margin-bottom:10px">
-        <button class="repeat-btn" id="rep-none" onclick="setRepeat('none')">반복 없음</button>
+        <button class="repeat-btn active" id="rep-none" onclick="setRepeat('none')">반복 없음</button>
         <button class="repeat-btn" id="rep-week" onclick="setRepeat('week')">매주</button>
         <button class="repeat-btn" id="rep-month" onclick="setRepeat('month')">매월</button>
       </div>
@@ -181,7 +151,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
     <div id="ev-list"></div>
   </div>
 
-  <!-- STATS PAGE -->
+  <!-- STATS -->
   <div id="page-stats" style="display:none">
     <div class="stats-tabs">
       <button class="stats-tab active" onclick="setStatsTab('week')" id="stab-week">주간</button>
@@ -190,7 +160,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
     <div id="stats-content"></div>
   </div>
 
-  <!-- SETTINGS PAGE -->
+  <!-- SETTINGS -->
   <div id="page-settings" style="display:none">
     <div class="day-detail">
       <div class="section-label">✏️ 앱 이름 설정</div>
@@ -210,14 +180,14 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 
 <script>
 const STORAGE_KEY='daily_tracker_v3';
-let state={days:{},tasks:[],events:[],currentYear:new Date().getFullYear(),currentMonth:new Date().getMonth(),selectedDate:null};
+let state={days:{},tasks:[],events:[],currentYear:new Date().getFullYear(),currentMonth:new Date().getMonth(),selectedDate:null,userName:''};
 
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const d=localStorage.getItem(STORAGE_KEY);if(d)state={...state,...JSON.parse(d)}}catch(e){}}
 
 load();
-if(!state.tasks.length) state.tasks=['운동','모닝페이지','저녁 후 금식','릴스 올리기'];
-if(!state.events) state.events=[];
+if(!state.tasks.length)state.tasks=['운동','모닝페이지','저녁 후 금식','릴스 올리기'];
+if(!state.events)state.events=[];
 
 const today=new Date();
 const todayStr=fmt(today);
@@ -240,18 +210,11 @@ function updateAppTitle(){
   document.getElementById('app-title').textContent=name?`${name} 하루 기록`:'하루 기록';
 }
 function saveName(){
-  const v=document.getElementById('name-input').value.trim();
-  state.userName=v;
+  state.userName=document.getElementById('name-input').value.trim();
   save();updateAppTitle();
-  const btn=document.querySelector('#page-settings button[onclick="saveName()"]');
-  if(btn){const orig=btn.textContent;btn.textContent='✅';setTimeout(()=>{btn.textContent=orig},1500);}
 }
 function focusNameEdit(){showPage('settings');}
-function moveYear(d){
-  state.currentYear+=d;
-  state.selectedDate=null;
-  renderCal();
-}
+
 function moveMonth(d){
   state.currentMonth+=d;
   if(state.currentMonth>11){state.currentMonth=0;state.currentYear++}
@@ -274,6 +237,17 @@ function renderCal(){
   document.getElementById('cal-days').innerHTML=html;
   renderEventStrip();
   if(state.selectedDate)renderDayDetail(state.selectedDate);
+}
+
+function eventMatchesDate(e,ds){
+  if(e.date===ds)return true;
+  if(!e.repeat||e.repeat==='none')return false;
+  const base=new Date(e.date);
+  const target=new Date(ds);
+  if(target<base)return false;
+  if(e.repeat==='week')return base.getDay()===target.getDay();
+  if(e.repeat==='month')return base.getDate()===target.getDate();
+  return false;
 }
 
 function dayBtn(ds,d,other){
@@ -319,38 +293,20 @@ function selectDay(ds){
   setTimeout(()=>{const el=document.getElementById('day-detail-area');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
 }
 
-function eventMatchesDate(e, ds){
-  if(e.date===ds)return true;
-  if(!e.repeat||e.repeat==='none')return false;
-  const base=new Date(e.date);
-  const target=new Date(ds);
-  if(target<base)return false;
-  if(e.repeat==='week'){
-    return base.getDay()===target.getDay();
-  }
-  if(e.repeat==='month'){
-    return base.getDate()===target.getDate();
-  }
-  return false;
-}
-
 function renderEventStrip(){
   const y=state.currentYear,m=state.currentMonth;
+  const seen=new Set();
   const evs=(state.events||[]).filter(e=>{
-    const base=new Date(e.date);
-    const y2=state.currentYear,m2=state.currentMonth;
     if(e.repeat==='week'||e.repeat==='month'){
-      const daysInMonth=new Date(y2,m2+1,0).getDate();
-      for(let d=1;d<=daysInMonth;d++){
-        const ds2=dateStr(y2,m2,d);
-        if(eventMatchesDate(e,ds2))return true;
-      }
+      const days=new Date(y,m+1,0).getDate();
+      for(let d=1;d<=days;d++){if(eventMatchesDate(e,dateStr(y,m,d)))return true;}
       return false;
     }
-    return base.getFullYear()===y2&&base.getMonth()===m2;
+    const base=new Date(e.date);
+    return base.getFullYear()===y&&base.getMonth()===m;
   });
   const strip=document.getElementById('event-strip');
-  strip.innerHTML=evs.map(e=>`<div class="event-chip" onclick="selectDay('${e.date}')">${e.emoji||'📌'} ${e.title} <span class="ev-date">${e.date.slice(8)}일</span></div>`).join('');
+  strip.innerHTML=evs.map(e=>`<div class="event-chip" onclick="selectDay('${e.date}')">${e.emoji||'📌'} ${e.title}</div>`).join('');
 }
 
 function renderDayDetail(ds){
@@ -358,27 +314,42 @@ function renderDayDetail(ds){
   const day=state.days[ds]||{};
   const [y,m,d]=ds.split('-');
   const ev=(state.events||[]).filter(e=>eventMatchesDate(e,ds));
-  let evHtml=ev.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${ev.map(e=>`<span style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:20px;padding:3px 10px;font-size:12px;color:#9333ea">${e.emoji||'📌'} ${e.title}</span>`).join('')}</div>`:'';
-  let tasksHtml=state.tasks.map(t=>{
+  const evHtml=ev.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${ev.map(e=>`<span style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:20px;padding:3px 10px;font-size:12px;color:#9333ea">${e.emoji||'📌'} ${e.title}</span>`).join('')}</div>`:'';
+  const tasksHtml=state.tasks.map(t=>{
     const v=(day.checks&&day.checks[t])||'';
     return`<div class="check-item">
       <span class="check-name">${t}</span>
       <div class="check-btns">
-        <button class="check-btn o${v==='o'?' active':''}" onclick="setCheck('${ds}','${t}','o')" title="완료">🔴</button>
-        <button class="check-btn t${v==='t'?' active':''}" onclick="setCheck('${ds}','${t}','t')" title="절반">⭕</button>
-        <button class="check-btn x${v==='x'?' active':''}" onclick="setCheck('${ds}','${t}','x')" title="못함">❌</button>
+        <button class="check-btn o${v==='o'?' active':''}" onclick="setCheck('${ds}','${t}','o')">🔴</button>
+        <button class="check-btn t${v==='t'?' active':''}" onclick="setCheck('${ds}','${t}','t')">⭕</button>
+        <button class="check-btn x${v==='x'?' active':''}" onclick="setCheck('${ds}','${t}','x')">❌</button>
       </div>
     </div>`;
   }).join('');
+
   area.innerHTML=`<div class="day-detail">
     <h3>📅 ${y}년 ${parseInt(m)}월 ${parseInt(d)}일</h3>
     ${evHtml}
     <div class="section-label">✏️ 하루 한 줄</div>
     <textarea class="comment-box" id="comment-${ds}" placeholder="오늘 하루를 한 줄로 표현해보세요 ✨">${day.comment||''}</textarea>
+    <div id="save-ok-${ds}" style="text-align:center;font-size:12px;color:#c084fc;height:18px;margin-top:6px"></div>
     <div class="section-label">✅ 오늘의 체크</div>
     ${tasksHtml||'<div class="empty">설정에서 할 일을 추가해주세요</div>'}
-    <div class="save-ok" id="save-ok-${ds}" style="text-align:center;font-size:12px;color:#c084fc;height:18px;margin-top:8px"></div>
   </div>`;
+
+  const textarea=document.getElementById('comment-'+ds);
+  let autoTimer;
+  textarea.addEventListener('input',()=>{
+    clearTimeout(autoTimer);
+    const ok=document.getElementById('save-ok-'+ds);
+    if(ok)ok.textContent='';
+    autoTimer=setTimeout(()=>{
+      if(!state.days[ds])state.days[ds]={};
+      state.days[ds].comment=textarea.value;
+      save();
+      if(ok){ok.textContent='자동 저장됨 ✓';setTimeout(()=>{ok.textContent=''},2000);}
+    },800);
+  });
 }
 
 function setCheck(ds,task,val){
@@ -388,21 +359,10 @@ function setCheck(ds,task,val){
   save();renderDayDetail(ds);
 }
 
-function saveDay(ds){
-  if(!state.days[ds])state.days[ds]={};
-  state.days[ds].comment=document.getElementById('comment-'+ds).value;
-  save();renderCal();
-  const ok=document.getElementById('save-ok-'+ds);
-  ok.textContent='✅ 저장됐어요!';
-  setTimeout(()=>{ok.textContent=''},2000);
-}
-
 let selectedRepeat='none';
 function setRepeat(v){
   selectedRepeat=v;
-  ['none','week','month'].forEach(x=>{
-    document.getElementById('rep-'+x).classList.toggle('active',x===v);
-  });
+  ['none','week','month'].forEach(x=>document.getElementById('rep-'+x).classList.toggle('active',x===v));
 }
 
 function addEvent(){
@@ -410,28 +370,27 @@ function addEvent(){
   const title=document.getElementById('ev-title-in').value.trim();
   const date=document.getElementById('ev-date-in').value;
   if(!title||!date)return;
-  if(!state.events)state.events=[];
   state.events.push({id:Date.now(),emoji,title,date,repeat:selectedRepeat});
   save();
   document.getElementById('ev-title-in').value='';
   document.getElementById('ev-emoji-in').value='';
   document.getElementById('ev-date-in').value='';
-  selectedRepeat='none';
-  setRepeat('none');
+  selectedRepeat='none';setRepeat('none');
   renderEvents();
 }
 
 function renderEvents(){
-  const sorted=[...(state.events||[])].sort((a,b)=>a.date.localeCompare(b.date));
+  const sorted=[...state.events].sort((a,b)=>a.date.localeCompare(b.date));
   const el=document.getElementById('ev-list');
   if(!sorted.length){el.innerHTML='<div class="empty">아직 중요한 일이 없어요 🌸</div>';return}
   el.innerHTML=sorted.map(e=>{
-    const repeatLabel=e.repeat==='week'?'<span style="font-size:10px;background:#f3e8ff;color:#9333ea;border-radius:6px;padding:2px 6px;margin-left:4px">매주</span>':e.repeat==='month'?'<span style="font-size:10px;background:#fdf2ff;color:#c084fc;border-radius:6px;padding:2px 6px;margin-left:4px">매월</span>':'';
+    const badge=e.repeat==='week'?'<span style="font-size:10px;background:#f3e8ff;color:#9333ea;border-radius:6px;padding:2px 6px;margin-left:4px">매주</span>':e.repeat==='month'?'<span style="font-size:10px;background:#fdf2ff;color:#c084fc;border-radius:6px;padding:2px 6px;margin-left:4px">매월</span>':'';
     return`<div class="ev-list-item">
-    <span class="ev-emoji">${e.emoji||'📌'}</span>
-    <div class="ev-info"><div class="ev-title">${e.title}${repeatLabel}</div><div class="ev-date-txt">${e.date}</div></div>
-    <button class="ev-del" onclick="delEvent(${e.id})"><i class="ti ti-trash"></i></button>
-  </div>`;}).join('');
+      <span class="ev-emoji">${e.emoji||'📌'}</span>
+      <div class="ev-info"><div class="ev-title">${e.title}${badge}</div><div class="ev-date-txt">${e.date}</div></div>
+      <button class="ev-del" onclick="delEvent(${e.id})"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
 }
 
 function delEvent(id){state.events=state.events.filter(e=>e.id!==id);save();renderEvents();}
@@ -447,187 +406,121 @@ function setStatsTab(t){
 function renderStats(){
   const el=document.getElementById('stats-content');
   const now=new Date();
-
   if(statsTab==='week'){
-    // 월화수목금토일 순서 (월요일 기준)
     const dates=[];
-    const dayLabels=['월','화','수','목','금','토','일'];
-    // 이번 주 월요일 찾기
-    const dow=now.getDay(); // 0=일,1=월...6=토
+    const dow=now.getDay();
     const mondayOffset=dow===0?-6:1-dow;
-    for(let i=0;i<7;i++){
-      const d=new Date(now);
-      d.setDate(d.getDate()+mondayOffset+i);
-      dates.push(fmt(d));
-    }
+    for(let i=0;i<7;i++){const d=new Date(now);d.setDate(d.getDate()+mondayOffset+i);dates.push(fmt(d));}
+    const dayLabels=['월','화','수','목','금','토','일'];
     const scores=dates.map(d=>getDayScore(d));
-    const maxScore=Math.max(...scores.filter(s=>s>=0),0.01);
-
     const bars=dates.map((d,i)=>{
       const s=scores[i];
       const pct=s<0?0:Math.round(s*100);
       const isToday=d===todayStr;
-      const fillH=s<0?0:Math.max(4,Math.round((s/1)*130));
+      const fillH=s<0?0:Math.max(4,Math.round(s*130));
       return`<div class="week-bar-col${isToday?' week-bar-today':''}">
         <div class="week-bar-pct">${s<0?'':pct+'%'}</div>
-        <div class="week-bar-track">
-          <div class="week-bar-fill" style="height:${fillH}px"></div>
-        </div>
+        <div class="week-bar-track"><div class="week-bar-fill" style="height:${fillH}px"></div></div>
         <div class="week-bar-day">${dayLabels[i]}</div>
       </div>`;
     }).join('');
-
-    const taskScoresWeek=state.tasks.map(t=>{
+    const taskScores=state.tasks.map(t=>{
       let pts=0;
-      dates.forEach(d=>{
-        const day=state.days[d];
-        const v=day&&day.checks&&day.checks[t];
-        if(v==='o')pts+=1;
-        else if(v==='t')pts+=0.5;
-      });
+      dates.forEach(d=>{const day=state.days[d];const v=day&&day.checks&&day.checks[t];if(v==='o')pts+=1;else if(v==='t')pts+=0.5;});
       return{name:t,pts};
     });
-    const taskWeekHtml=taskScoresWeek.map(ts=>`<div class="task-score-item">
+    const taskHtml=taskScores.map(ts=>`<div class="task-score-item">
       <span class="ts-name">${ts.name}</span>
       <span class="ts-score">${ts.pts%1===0?ts.pts:ts.pts.toFixed(1)}</span>
       <span class="ts-max"> / 7점</span>
     </div>`).join('');
-
-    el.innerHTML=`<div class="chart-wrap">
-      <div class="chart-title">📊 이번 주 달성률</div>
-      <div class="week-bars">${bars}</div>
-    </div>
-    <div class="chart-wrap">
-      <div class="chart-title">🏅 항목별 이번 주 총점</div>
-      ${taskWeekHtml||'<div class="empty">할 일을 설정해주세요</div>'}
-    </div>`;
-
+    el.innerHTML=`<div class="chart-wrap"><div class="chart-title">📊 이번 주 달성률</div><div class="week-bars">${bars}</div></div>
+    <div class="chart-wrap"><div class="chart-title">🏅 항목별 이번 주 총점</div>${taskHtml||'<div class="empty">할 일을 설정해주세요</div>'}</div>`;
   } else {
-    // 월간
     const y=now.getFullYear(),m=now.getMonth();
     const totalDays=new Date(y,m+1,0).getDate();
     const dates=[];
     for(let d=1;d<=totalDays;d++)dates.push(dateStr(y,m,d));
-    const scores=dates.map(d=>getDayScore(d));
-
     const barHtml=dates.map((d,i)=>{
-      const s=scores[i];
+      const s=getDayScore(d);
       const pct=s<0?0:Math.round(s*100);
-      return`<div class="bar-row">
-        <span class="bar-label">${i+1}일</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-        <span class="bar-score">${s<0?'-':pct+'%'}</span>
-      </div>`;
+      return`<div class="bar-row"><span class="bar-label">${i+1}일</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-score">${s<0?'-':pct+'%'}</span></div>`;
     }).join('');
-
-    // 항목별 총점
     const taskScores=state.tasks.map(t=>{
       let pts=0;
-      dates.forEach(d=>{
-        const day=state.days[d];
-        const v=day&&day.checks&&day.checks[t];
-        if(v==='o')pts+=1;
-        else if(v==='t')pts+=0.5;
-      });
+      dates.forEach(d=>{const day=state.days[d];const v=day&&day.checks&&day.checks[t];if(v==='o')pts+=1;else if(v==='t')pts+=0.5;});
       return{name:t,pts};
     });
-
     const taskHtml=taskScores.map(ts=>`<div class="task-score-item">
       <span class="ts-name">${ts.name}</span>
-      <span class="ts-score">${ts.pts % 1 === 0 ? ts.pts : ts.pts.toFixed(1)}</span>
+      <span class="ts-score">${ts.pts%1===0?ts.pts:ts.pts.toFixed(1)}</span>
       <span class="ts-max"> / ${totalDays}점</span>
     </div>`).join('');
-
-    el.innerHTML=`<div class="chart-wrap">
-      <div class="chart-title">📅 이번 달 일별 달성률</div>
-      <div style="max-height:260px;overflow-y:auto">${barHtml}</div>
-    </div>
-    <div class="chart-wrap">
-      <div class="chart-title">🏅 항목별 이달 총점</div>
-      ${taskHtml||'<div class="empty">할 일을 설정해주세요</div>'}
-    </div>`;
+    el.innerHTML=`<div class="chart-wrap"><div class="chart-title">📅 이번 달 일별 달성률</div><div style="max-height:260px;overflow-y:auto">${barHtml}</div></div>
+    <div class="chart-wrap"><div class="chart-title">🏅 항목별 이달 총점</div>${taskHtml||'<div class="empty">할 일을 설정해주세요</div>'}</div>`;
   }
 }
 
 function renderSettings(){
-  const el=document.getElementById('settings-tasks');
   const ni=document.getElementById('name-input');
   if(ni)ni.value=state.userName||'';
+  const el=document.getElementById('settings-tasks');
   if(!state.tasks.length){el.innerHTML='<div class="empty">할 일이 없어요</div>';return}
-  el.innerHTML=state.tasks.map((t,i)=>`<div class="check-item" draggable="true" data-index="${i}" 
+  el.innerHTML=state.tasks.map((t,i)=>`<div class="check-item" draggable="true" data-index="${i}"
     ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dragDrop(event)" ondragend="dragEnd(event)"
     ontouchstart="touchStart(event)" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)">
-    <span class="drag-handle" aria-label="순서 변경">⠿</span>
+    <span class="drag-handle">⠿</span>
     <span class="check-name">${t}</span>
     <button onclick="removeTask(${i})" style="border:none;background:transparent;cursor:pointer;color:#fca5a5;font-size:18px"><i class="ti ti-trash"></i></button>
   </div>`).join('');
-}
-
-// drag & drop (PC)
-let dragSrc=null;
-function dragStart(e){dragSrc=+e.currentTarget.dataset.index;e.currentTarget.classList.add('dragging');}
-function dragOver(e){e.preventDefault();}
-function dragDrop(e){
-  const tgt=+e.currentTarget.dataset.index;
-  if(dragSrc===null||dragSrc===tgt)return;
-  const tasks=[...state.tasks];
-  const [moved]=tasks.splice(dragSrc,1);
-  tasks.splice(tgt,0,moved);
-  state.tasks=tasks;save();renderSettings();
-}
-function dragEnd(e){e.currentTarget.classList.remove('dragging');dragSrc=null;}
-
-// touch drag (모바일)
-let touchSrcIdx=null,touchEl=null,touchClone=null;
-function touchStart(e){
-  touchSrcIdx=+e.currentTarget.dataset.index;
-  touchEl=e.currentTarget;
-  const r=touchEl.getBoundingClientRect();
-  touchClone=touchEl.cloneNode(true);
-  touchClone.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;opacity:0.8;pointer-events:none;z-index:9999;background:#f3e8ff;border-radius:10px;`;
-  document.body.appendChild(touchClone);
-  touchEl.style.opacity='0.3';
-}
-function touchMove(e){
-  if(!touchClone)return;
-  e.preventDefault();
-  const t=e.touches[0];
-  touchClone.style.top=(t.clientY-30)+'px';
-  touchClone.style.left=(t.clientX-60)+'px';
-}
-function touchEnd(e){
-  if(!touchClone)return;
-  const t=e.changedTouches[0];
-  touchClone.remove();touchClone=null;
-  if(touchEl)touchEl.style.opacity='';
-  const el=document.getElementById('settings-tasks');
-  const items=[...el.querySelectorAll('.check-item')];
-  let tgtIdx=null;
-  items.forEach((item,i)=>{
-    const r=item.getBoundingClientRect();
-    if(t.clientY>=r.top&&t.clientY<=r.bottom)tgtIdx=i;
-  });
-  if(tgtIdx!==null&&tgtIdx!==touchSrcIdx){
-    const tasks=[...state.tasks];
-    const [moved]=tasks.splice(touchSrcIdx,1);
-    tasks.splice(tgtIdx,0,moved);
-    state.tasks=tasks;save();renderSettings();
-  }
-  touchSrcIdx=null;touchEl=null;
 }
 
 function addTask(){
   const inp=document.getElementById('new-task-input');
   const v=inp.value.trim();
   if(!v)return;
-  state.tasks.push(v);
-  inp.value='';
-  save();renderSettings();
+  state.tasks.push(v);inp.value='';save();renderSettings();
 }
-
 function removeTask(i){state.tasks.splice(i,1);save();renderSettings();}
-
 document.getElementById('new-task-input').addEventListener('keydown',e=>{if(e.key==='Enter')addTask()});
+
+let dragSrc=null;
+function dragStart(e){dragSrc=+e.currentTarget.dataset.index;e.currentTarget.classList.add('dragging');}
+function dragOver(e){e.preventDefault();}
+function dragDrop(e){
+  const tgt=+e.currentTarget.dataset.index;
+  if(dragSrc===null||dragSrc===tgt)return;
+  const tasks=[...state.tasks];const[moved]=tasks.splice(dragSrc,1);tasks.splice(tgt,0,moved);
+  state.tasks=tasks;save();renderSettings();
+}
+function dragEnd(e){e.currentTarget.classList.remove('dragging');dragSrc=null;}
+
+let touchSrcIdx=null,touchEl=null,touchClone=null;
+function touchStart(e){
+  touchSrcIdx=+e.currentTarget.dataset.index;touchEl=e.currentTarget;
+  const r=touchEl.getBoundingClientRect();
+  touchClone=touchEl.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;opacity:0.8;pointer-events:none;z-index:9999;background:#f3e8ff;border-radius:10px;`;
+  document.body.appendChild(touchClone);touchEl.style.opacity='0.3';
+}
+function touchMove(e){
+  if(!touchClone)return;e.preventDefault();
+  const t=e.touches[0];
+  touchClone.style.top=(t.clientY-30)+'px';touchClone.style.left=(t.clientX-60)+'px';
+}
+function touchEnd(e){
+  if(!touchClone)return;
+  const t=e.changedTouches[0];touchClone.remove();touchClone=null;
+  if(touchEl)touchEl.style.opacity='';
+  const items=[...document.getElementById('settings-tasks').querySelectorAll('.check-item')];
+  let tgtIdx=null;
+  items.forEach((item,i)=>{const r=item.getBoundingClientRect();if(t.clientY>=r.top&&t.clientY<=r.bottom)tgtIdx=i;});
+  if(tgtIdx!==null&&tgtIdx!==touchSrcIdx){
+    const tasks=[...state.tasks];const[moved]=tasks.splice(touchSrcIdx,1);tasks.splice(tgtIdx,0,moved);
+    state.tasks=tasks;save();renderSettings();
+  }
+  touchSrcIdx=null;touchEl=null;
+}
 
 renderCal();
 selectDay(todayStr);
