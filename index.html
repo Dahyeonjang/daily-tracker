@@ -58,7 +58,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 .add-task input:focus{border-color:#9333ea}
 .add-task button{background:#9333ea;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
 
-.event-form{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 16px rgba(180,100,200,.1);margin-bottom:16px}
+.event-form{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 16px rgba(180,100,200,.1);margin-bottom:16px;overflow:hidden}
 .ev-input{width:100%;border:1.5px solid #e9d5ff;border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:8px;outline:none;font-family:inherit}
 .ev-input:focus{border-color:#9333ea}
 .repeat-btn{flex:1;border:1.5px solid #e9d5ff;border-radius:8px;padding:7px 4px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#9333ea;transition:all .2s}
@@ -139,7 +139,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
         <input class="ev-input" id="ev-emoji-in" placeholder="이모티콘" style="width:72px;margin:0">
         <input class="ev-input" id="ev-title-in" placeholder="제목" style="flex:1;margin:0">
       </div>
-      <input class="ev-input" id="ev-date-in" type="date">
+      <input class="ev-input" id="ev-date-in" type="date" style="width:100%;max-width:100%">
       <div style="display:flex;gap:6px;margin-bottom:10px">
         <button class="repeat-btn active" id="rep-none" onclick="setRepeat('none')">반복 없음</button>
         <button class="repeat-btn" id="rep-week" onclick="setRepeat('week')">매주</button>
