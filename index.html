@@ -1,4 +1,18 @@
-<!DOCTYPE html>
+const textarea=document.getElementById('comment-'+ds);
+  if(textarea){
+    let timer;
+    textarea.addEventListener('input',()=>{
+      clearTimeout(timer);
+      const ok=document.getElementById('save-ok-'+ds);
+      if(ok)ok.textContent='';
+      timer=setTimeout(()=>{
+        if(!state.days[ds])state.days[ds]={};
+        state.days[ds].comment=textarea.value;
+        save();renderCal();
+        if(ok){ok.textContent='자동 저장됨 ✓';setTimeout(()=>{ok.textContent=''},2000);}
+      },800);
+    });
+  }<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -66,6 +80,8 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 .event-form{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 16px rgba(180,100,200,.1);margin-bottom:16px}
 .ev-input{width:100%;border:1.5px solid #e9d5ff;border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:8px;outline:none;font-family:inherit}
 .ev-input:focus{border-color:#9333ea}
+.repeat-btn{flex:1;border:1.5px solid #e9d5ff;border-radius:8px;padding:7px 4px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#9333ea;transition:all .2s}
+.repeat-btn.active{background:#9333ea;color:#fff;border-color:#9333ea}
 .ev-add-btn{background:#9333ea;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:14px;cursor:pointer;float:right}
 .ev-list-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:8px;box-shadow:0 1px 8px rgba(180,100,200,.1)}
 .ev-emoji{font-size:20px}
@@ -149,9 +165,16 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
   <div id="page-events" style="display:none">
     <div class="event-form">
       <div class="section-label">⭐ 중요한 일 추가</div>
-      <input class="ev-input" id="ev-emoji-in" placeholder="이모티콘 (예: 🎂)" style="width:80px;display:inline-block;margin-right:8px">
-      <input class="ev-input" id="ev-title-in" placeholder="제목" style="width:calc(100% - 96px);display:inline-block">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input class="ev-input" id="ev-emoji-in" placeholder="이모티콘" style="width:72px;margin:0">
+        <input class="ev-input" id="ev-title-in" placeholder="제목" style="flex:1;margin:0">
+      </div>
       <input class="ev-input" id="ev-date-in" type="date">
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="repeat-btn" id="rep-none" onclick="setRepeat('none')">반복 없음</button>
+        <button class="repeat-btn" id="rep-week" onclick="setRepeat('week')">매주</button>
+        <button class="repeat-btn" id="rep-month" onclick="setRepeat('month')">매월</button>
+      </div>
       <button class="ev-add-btn" onclick="addEvent()">추가</button>
       <div style="clear:both"></div>
     </div>
@@ -257,7 +280,7 @@ function dayBtn(ds,d,other){
   const day=state.days[ds]||{};
   const hasNote=day.comment||(day.checks&&Object.keys(day.checks).length);
   const score=getDayScore(ds);
-  const hasEvent=(state.events||[]).some(e=>e.date===ds);
+  const hasEvent=(state.events||[]).some(e=>eventMatchesDate(e,ds));
   const isToday=ds===todayStr;
   const isSel=ds===state.selectedDate;
   let cls='cal-day';
@@ -296,9 +319,36 @@ function selectDay(ds){
   setTimeout(()=>{const el=document.getElementById('day-detail-area');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
 }
 
+function eventMatchesDate(e, ds){
+  if(e.date===ds)return true;
+  if(!e.repeat||e.repeat==='none')return false;
+  const base=new Date(e.date);
+  const target=new Date(ds);
+  if(target<base)return false;
+  if(e.repeat==='week'){
+    return base.getDay()===target.getDay();
+  }
+  if(e.repeat==='month'){
+    return base.getDate()===target.getDate();
+  }
+  return false;
+}
+
 function renderEventStrip(){
   const y=state.currentYear,m=state.currentMonth;
-  const evs=(state.events||[]).filter(e=>{const d=new Date(e.date);return d.getFullYear()===y&&d.getMonth()===m;}).sort((a,b)=>a.date.localeCompare(b.date));
+  const evs=(state.events||[]).filter(e=>{
+    const base=new Date(e.date);
+    const y2=state.currentYear,m2=state.currentMonth;
+    if(e.repeat==='week'||e.repeat==='month'){
+      const daysInMonth=new Date(y2,m2+1,0).getDate();
+      for(let d=1;d<=daysInMonth;d++){
+        const ds2=dateStr(y2,m2,d);
+        if(eventMatchesDate(e,ds2))return true;
+      }
+      return false;
+    }
+    return base.getFullYear()===y2&&base.getMonth()===m2;
+  });
   const strip=document.getElementById('event-strip');
   strip.innerHTML=evs.map(e=>`<div class="event-chip" onclick="selectDay('${e.date}')">${e.emoji||'📌'} ${e.title} <span class="ev-date">${e.date.slice(8)}일</span></div>`).join('');
 }
@@ -307,7 +357,7 @@ function renderDayDetail(ds){
   const area=document.getElementById('day-detail-area');
   const day=state.days[ds]||{};
   const [y,m,d]=ds.split('-');
-  const ev=(state.events||[]).filter(e=>e.date===ds);
+  const ev=(state.events||[]).filter(e=>eventMatchesDate(e,ds));
   let evHtml=ev.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${ev.map(e=>`<span style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:20px;padding:3px 10px;font-size:12px;color:#9333ea">${e.emoji||'📌'} ${e.title}</span>`).join('')}</div>`:'';
   let tasksHtml=state.tasks.map(t=>{
     const v=(day.checks&&day.checks[t])||'';
@@ -327,8 +377,7 @@ function renderDayDetail(ds){
     <textarea class="comment-box" id="comment-${ds}" placeholder="오늘 하루를 한 줄로 표현해보세요 ✨">${day.comment||''}</textarea>
     <div class="section-label">✅ 오늘의 체크</div>
     ${tasksHtml||'<div class="empty">설정에서 할 일을 추가해주세요</div>'}
-    <button class="save-btn" onclick="saveDay('${ds}')">💾 저장하기</button>
-    <div class="save-ok" id="save-ok-${ds}"></div>
+    <div class="save-ok" id="save-ok-${ds}" style="text-align:center;font-size:12px;color:#c084fc;height:18px;margin-top:8px"></div>
   </div>`;
 }
 
@@ -348,17 +397,27 @@ function saveDay(ds){
   setTimeout(()=>{ok.textContent=''},2000);
 }
 
+let selectedRepeat='none';
+function setRepeat(v){
+  selectedRepeat=v;
+  ['none','week','month'].forEach(x=>{
+    document.getElementById('rep-'+x).classList.toggle('active',x===v);
+  });
+}
+
 function addEvent(){
   const emoji=document.getElementById('ev-emoji-in').value.trim()||'📌';
   const title=document.getElementById('ev-title-in').value.trim();
   const date=document.getElementById('ev-date-in').value;
   if(!title||!date)return;
   if(!state.events)state.events=[];
-  state.events.push({id:Date.now(),emoji,title,date});
+  state.events.push({id:Date.now(),emoji,title,date,repeat:selectedRepeat});
   save();
   document.getElementById('ev-title-in').value='';
   document.getElementById('ev-emoji-in').value='';
   document.getElementById('ev-date-in').value='';
+  selectedRepeat='none';
+  setRepeat('none');
   renderEvents();
 }
 
@@ -366,11 +425,13 @@ function renderEvents(){
   const sorted=[...(state.events||[])].sort((a,b)=>a.date.localeCompare(b.date));
   const el=document.getElementById('ev-list');
   if(!sorted.length){el.innerHTML='<div class="empty">아직 중요한 일이 없어요 🌸</div>';return}
-  el.innerHTML=sorted.map(e=>`<div class="ev-list-item">
+  el.innerHTML=sorted.map(e=>{
+    const repeatLabel=e.repeat==='week'?'<span style="font-size:10px;background:#f3e8ff;color:#9333ea;border-radius:6px;padding:2px 6px;margin-left:4px">매주</span>':e.repeat==='month'?'<span style="font-size:10px;background:#fdf2ff;color:#c084fc;border-radius:6px;padding:2px 6px;margin-left:4px">매월</span>':'';
+    return`<div class="ev-list-item">
     <span class="ev-emoji">${e.emoji||'📌'}</span>
-    <div class="ev-info"><div class="ev-title">${e.title}</div><div class="ev-date-txt">${e.date}</div></div>
+    <div class="ev-info"><div class="ev-title">${e.title}${repeatLabel}</div><div class="ev-date-txt">${e.date}</div></div>
     <button class="ev-del" onclick="delEvent(${e.id})"><i class="ti ti-trash"></i></button>
-  </div>`).join('');
+  </div>`;}).join('');
 }
 
 function delEvent(id){state.events=state.events.filter(e=>e.id!==id);save();renderEvents();}
