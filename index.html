@@ -43,6 +43,9 @@ body{font-family:'Segoe UI',sans-serif;background:#fff9fe;min-height:100vh;color
 .section-label{font-size:13px;font-weight:600;color:#9333ea;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
 
 .check-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;margin-bottom:6px;background:#faf7ff;border:1px solid #f0e6ff}
+.drag-handle{cursor:grab;color:#ccc;font-size:18px;padding:0 2px;touch-action:none}
+.drag-handle:active{cursor:grabbing}
+.check-item.dragging{opacity:0.4;border:2px dashed #c084fc}
 .check-name{flex:1;font-size:14px;color:#333}
 .check-btns{display:flex;gap:4px}
 .check-btn{width:34px;height:34px;border:1.5px solid #e9d5ff;border-radius:8px;background:transparent;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
@@ -254,6 +257,7 @@ function dayBtn(ds,d,other){
   const day=state.days[ds]||{};
   const hasNote=day.comment||(day.checks&&Object.keys(day.checks).length);
   const score=getDayScore(ds);
+  const hasEvent=(state.events||[]).some(e=>e.date===ds);
   const isToday=ds===todayStr;
   const isSel=ds===state.selectedDate;
   let cls='cal-day';
@@ -264,7 +268,8 @@ function dayBtn(ds,d,other){
   if(score>=0)cls+=' has-score';
   const sc=score>=0?scoreColor(score):'';
   const dotStyle=score>=0?`background:${sc};display:block`:'display:none';
-  return`<button class="${cls}" onclick="selectDay('${ds}')"><span>${d}</span><span class="score-dot" style="${dotStyle}"></span></button>`;
+  const evDot=hasEvent?`<span style="width:5px;height:5px;background:${isToday?'#fff':'#f472b6'};border-radius:50%;position:absolute;top:4px;right:5px;"></span>`:'';
+  return`<button class="${cls}" onclick="selectDay('${ds}')"><span>${d}</span>${evDot}<span class="score-dot" style="${dotStyle}"></span></button>`;
 }
 
 function scoreColor(s){
@@ -488,10 +493,66 @@ function renderSettings(){
   const ni=document.getElementById('name-input');
   if(ni)ni.value=state.userName||'';
   if(!state.tasks.length){el.innerHTML='<div class="empty">할 일이 없어요</div>';return}
-  el.innerHTML=state.tasks.map((t,i)=>`<div class="check-item">
+  el.innerHTML=state.tasks.map((t,i)=>`<div class="check-item" draggable="true" data-index="${i}" 
+    ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dragDrop(event)" ondragend="dragEnd(event)"
+    ontouchstart="touchStart(event)" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)">
+    <span class="drag-handle" aria-label="순서 변경">⠿</span>
     <span class="check-name">${t}</span>
     <button onclick="removeTask(${i})" style="border:none;background:transparent;cursor:pointer;color:#fca5a5;font-size:18px"><i class="ti ti-trash"></i></button>
   </div>`).join('');
+}
+
+// drag & drop (PC)
+let dragSrc=null;
+function dragStart(e){dragSrc=+e.currentTarget.dataset.index;e.currentTarget.classList.add('dragging');}
+function dragOver(e){e.preventDefault();}
+function dragDrop(e){
+  const tgt=+e.currentTarget.dataset.index;
+  if(dragSrc===null||dragSrc===tgt)return;
+  const tasks=[...state.tasks];
+  const [moved]=tasks.splice(dragSrc,1);
+  tasks.splice(tgt,0,moved);
+  state.tasks=tasks;save();renderSettings();
+}
+function dragEnd(e){e.currentTarget.classList.remove('dragging');dragSrc=null;}
+
+// touch drag (모바일)
+let touchSrcIdx=null,touchEl=null,touchClone=null;
+function touchStart(e){
+  touchSrcIdx=+e.currentTarget.dataset.index;
+  touchEl=e.currentTarget;
+  const r=touchEl.getBoundingClientRect();
+  touchClone=touchEl.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;opacity:0.8;pointer-events:none;z-index:9999;background:#f3e8ff;border-radius:10px;`;
+  document.body.appendChild(touchClone);
+  touchEl.style.opacity='0.3';
+}
+function touchMove(e){
+  if(!touchClone)return;
+  e.preventDefault();
+  const t=e.touches[0];
+  touchClone.style.top=(t.clientY-30)+'px';
+  touchClone.style.left=(t.clientX-60)+'px';
+}
+function touchEnd(e){
+  if(!touchClone)return;
+  const t=e.changedTouches[0];
+  touchClone.remove();touchClone=null;
+  if(touchEl)touchEl.style.opacity='';
+  const el=document.getElementById('settings-tasks');
+  const items=[...el.querySelectorAll('.check-item')];
+  let tgtIdx=null;
+  items.forEach((item,i)=>{
+    const r=item.getBoundingClientRect();
+    if(t.clientY>=r.top&&t.clientY<=r.bottom)tgtIdx=i;
+  });
+  if(tgtIdx!==null&&tgtIdx!==touchSrcIdx){
+    const tasks=[...state.tasks];
+    const [moved]=tasks.splice(touchSrcIdx,1);
+    tasks.splice(tgtIdx,0,moved);
+    state.tasks=tasks;save();renderSettings();
+  }
+  touchSrcIdx=null;touchEl=null;
 }
 
 function addTask(){
